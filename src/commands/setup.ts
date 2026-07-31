@@ -13,6 +13,8 @@ import {
 import { validateApiKey } from './auth.js';
 import { errorMessage, EXIT, makeReporter, reportFailure, type CommandDeps } from './gen.js';
 
+const EXIT_INTERRUPT = 130;
+
 export interface SetupOptions {
   json?: boolean;
 }
@@ -42,8 +44,11 @@ export async function runSetup(
     });
 
     reporter.spinnerStart('Verifying API key...');
-    await validateApiKey(apiKey.trim(), deps);
-    reporter.spinnerStop();
+    try {
+      await validateApiKey(apiKey.trim(), deps);
+    } finally {
+      reporter.spinnerStop();
+    }
     const configFile = writeApiKey(apiKey.trim(), deps.homeDir);
     reporter.success(`API key verified and saved to ${configFile} (mode 0600)`);
 
@@ -79,9 +84,18 @@ export async function runSetup(
 
     return EXIT.OK;
   } catch (err) {
+    if (isPromptExitError(err)) {
+      reporter.spinnerStop();
+      reporter.info('Setup cancelled.');
+      return EXIT_INTERRUPT;
+    }
     const code = err instanceof AuthError ? EXIT.AUTH : EXIT.FAILED;
     return reportFailure(reporter, errorMessage(err), code);
   }
+}
+
+export function isPromptExitError(err: unknown): boolean {
+  return err instanceof Error && err.name === 'ExitPromptError';
 }
 
 function modelChoices(defaultModel: string, models: string[]) {
