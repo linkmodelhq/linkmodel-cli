@@ -4,6 +4,25 @@ This document is for AI agents installing and validating `linkmodel-cli` on a
 user machine. The npm package name is `linkmodel-cli`; the commands are `lkm`
 and `linkmodel`.
 
+## Copy Prompt
+
+Give this prompt to an AI agent:
+
+```text
+Install and validate the LinkModel CLI on this machine.
+
+Use the official AI install guide:
+https://github.com/linkmodelhq/linkmodel-cli/blob/main/install.md
+
+Follow these rules:
+- Install with npm: npm install -g linkmodel-cli
+- Verify with lkm --version, lkm --help, and lkm doctor --json
+- Use lkm auth login --api-key <key> only through a secure local channel
+- Never print, log, or commit the full API key
+- Prefer --json for automation
+- Do not run paid image or video generation unless I explicitly ask for it
+```
+
 ## 1. Preflight
 
 Check the environment before installing:

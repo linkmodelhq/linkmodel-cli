@@ -39,6 +39,23 @@ It is the canonical runbook for safe installation and validation, including:
 - API-Key authentication without exposing secrets.
 - Exit codes, JSON output, and troubleshooting guidance.
 
+Copy this prompt into an AI agent:
+
+```text
+Install and validate the LinkModel CLI on this machine.
+
+Use the official AI install guide:
+https://github.com/linkmodelhq/linkmodel-cli/blob/main/install.md
+
+Follow these rules:
+- Install with npm: npm install -g linkmodel-cli
+- Verify with lkm --version, lkm --help, and lkm doctor --json
+- Use lkm auth login --api-key <key> only through a secure local channel
+- Never print, log, or commit the full API key
+- Prefer --json for automation
+- Do not run paid image or video generation unless I explicitly ask for it
+```
+
 ## Installation
 
 ```sh
