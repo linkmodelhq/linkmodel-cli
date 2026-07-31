@@ -30,6 +30,7 @@ import {
 } from './commands/config.js';
 import { EXIT, runGen, type SharedGenOptions } from './commands/gen.js';
 import { runModelsList, runModelsShow } from './commands/models.js';
+import { runSetup } from './commands/setup.js';
 import { runStatus, type StatusCommandOptions } from './commands/status.js';
 import { imageModality } from './modalities/image.js';
 import type { ModalitySpec } from './modalities/spec.js';
@@ -202,6 +203,14 @@ export async function run(argv: string[]): Promise<number> {
       exitCode = runModelsShow(model, opts);
     });
 
+  program
+    .command('setup')
+    .description('Run interactive first-time setup')
+    .option('--json', 'fail with a structured message because setup is interactive')
+    .action(async (opts: { json?: boolean }) => {
+      exitCode = await runSetup(opts);
+    });
+
   const config = program.command('config').description('Manage configuration');
   config
     .command('set')
@@ -265,7 +274,7 @@ export async function run(argv: string[]): Promise<number> {
 
   program.addHelpText(
     'after',
-    `\nExamples:\n  lkm image "a red panda" -q low      Generate an image (the word gen may be omitted)\n  lkm video "a misty valley drone shot"  Generate a video (the word gen may be omitted)\n  lkm image gen "a red panda" -q low  Same as above, explicit form\n  lkm image status <task_id>          Query a task\n`,
+    `\nExamples:\n  lkm setup                           Run interactive first-time setup\n  lkm image "a red panda" -q low      Generate an image (the word gen may be omitted)\n  lkm video "a misty valley drone shot"  Generate a video (the word gen may be omitted)\n  lkm image gen "a red panda" -q low  Same as above, explicit form\n  lkm image status <task_id>          Query a task\n`,
   );
 
   if (argv.length <= 2) {

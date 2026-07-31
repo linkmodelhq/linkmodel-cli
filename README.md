@@ -46,9 +46,18 @@ lkm --version
 lkm --help
 ```
 
+Global installs print a short next-step hint. Set
+`LINKMODEL_SKIP_POSTINSTALL=1` to silence that message in automated environments.
+
 ## Quick Start
 
-Configure your API key:
+Run the interactive setup:
+
+```sh
+lkm setup
+```
+
+Or configure your API key directly:
 
 ```sh
 lkm auth login --api-key <your-api-key>
@@ -80,10 +89,14 @@ The file extension follows the actual content type, such as `png`, `jpg`,
 Authentication is API-Key based.
 
 ```sh
+lkm setup
 lkm auth login --api-key <your-api-key>
 lkm auth status
 lkm auth logout
 ```
+
+`lkm setup` is an interactive first-time setup flow. It verifies and saves your
+API key, then optionally lets you choose default image and video models.
 
 Saved credentials are written to:
 

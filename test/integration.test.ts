@@ -463,12 +463,21 @@ test('lkm with no args prints top-level help and exits 0; --help includes implic
 
   const help = await runCli(['--help']);
   assert.equal(help.code, 0);
+  assert.match(help.stdout, /lkm setup/);
   assert.match(help.stdout, /lkm image "a red panda"/);
   assert.match(help.stdout, /gen may be omitted/);
 
   const ver = await runCli(['--version']);
   assert.equal(ver.code, 0);
   assert.match(ver.stdout.trim(), /^\d+\.\d+\.\d+$/);
+});
+
+test('setup --json fails fast because setup is interactive', async () => {
+  const r = await runCli(['setup', '--json']);
+  assert.equal(r.code, 2);
+  const payload = JSON.parse(r.stdout.trim());
+  assert.equal(payload.ok, false);
+  assert.match(payload.error, /Interactive setup requires a TTY/);
 });
 
 test('--json contract: every error path emits exactly one JSON line with non-empty error', async () => {

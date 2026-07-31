@@ -25,6 +25,12 @@ Use npm for the global install:
 npm install -g linkmodel-cli
 ```
 
+Global installs print a short next-step hint. For silent automation, set:
+
+```sh
+LINKMODEL_SKIP_POSTINSTALL=1 npm install -g linkmodel-cli
+```
+
 Validate the installed command:
 
 ```sh
@@ -51,6 +57,12 @@ Check current auth state:
 
 ```sh
 lkm auth status --json
+```
+
+For interactive local setup, use:
+
+```sh
+lkm setup
 ```
 
 If no key is configured, ask the user for a LinkModel API key through the secure

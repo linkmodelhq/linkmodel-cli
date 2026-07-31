@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const ROOTS = ['src', 'test'];
+const ROOTS = ['src', 'test', 'scripts'];
 const EXTRA_FILES = ['README.md', 'install.md', 'package.json', '.gitignore'];
 const CJK_PATTERN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
 
