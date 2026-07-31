@@ -1,0 +1,51 @@
+{
+  "name": "linkmodel-cli",
+  "version": "0.1.1",
+  "description": "Command-line client for the linkmodel API: generate images and videos end to end (create task, poll, download).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "lkm": "dist/cli.js",
+    "linkmodel": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "install.md"
+  ],
+  "scripts": {
+    "prebuild": "node scripts/write-version.mjs",
+    "build": "tsc -p tsconfig.json",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "list": "node scripts/list-models.mjs",
+    "build:all": "node scripts/build-model-schemas.mjs",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major",
+    "pretest": "node scripts/write-version.mjs",
+    "test": "npm run check:i18n && tsc -p tsconfig.test.json && node --test \"test-dist/test/*.test.js\"",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ora": "^8.0.1",
+    "picocolors": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0"
+  },
+  "keywords": [
+    "linkmodel",
+    "cli",
+    "image-generation",
+    "video-generation",
+    "text-to-image",
+    "image-to-image",
+    "gpt-image-2",
+    "ai"
+  ]
+}

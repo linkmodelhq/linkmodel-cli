@@ -1,0 +1,9 @@
+node_modules/
+dist/
+test-dist/
+out/
+docs/plans/
+docs/superpowers/
+
+# Exported conversation logs that may contain sensitive information
+*-cli-linkmodel-api-cli.txt
