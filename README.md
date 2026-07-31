@@ -28,6 +28,17 @@ lkm video "Empty cinematic establishing shot of a misty city street after rain"
 - Node.js 20 or newer.
 - A LinkModel API key.
 
+## Agent Install Guide
+
+AI agents and automated installers should start with [install.md](./install.md).
+It is the canonical runbook for safe installation and validation, including:
+
+- Node/npm preflight checks.
+- Global install and silent install commands.
+- Non-billing validation with `lkm doctor --json`.
+- API-Key authentication without exposing secrets.
+- Exit codes, JSON output, and troubleshooting guidance.
+
 ## Installation
 
 ```sh
@@ -376,12 +387,6 @@ Disable update checks:
 LINKMODEL_NO_UPDATE_CHECK=1 lkm --help
 NO_UPDATE_NOTIFIER=1 lkm --help
 ```
-
-## Agent Install Guide
-
-For AI agents or scripted setup, use [install.md](./install.md). It covers
-Node/npm preflight, global install validation, API-Key authentication, safe
-non-billing checks, and troubleshooting.
 
 ## License
 
