@@ -1,8 +1,12 @@
-# LinkModel CLI
+<h1 align="center">LinkModel CLI</h1>
 
-[![npm version](https://img.shields.io/npm/v/linkmodel-cli.svg)](https://www.npmjs.com/package/linkmodel-cli)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933.svg)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](#license)
+<p align="center">
+  <a href="https://www.npmjs.com/package/linkmodel-cli"><img alt="npm version" src="https://img.shields.io/npm/v/linkmodel-cli.svg"></a>
+  <a href="https://nodejs.org/"><img alt="Node.js" src="https://img.shields.io/badge/node-%3E%3D20-339933.svg"></a>
+  <a href="#license"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+</p>
+
+![LinkModel CLI](https://static.linkmodel.ai/og/linkmodel-cli-og.png)
 
 Official command-line client for the LinkModel API. Generate images and videos
 from your terminal with a complete task lifecycle: create, poll, download, and
@@ -415,4 +419,4 @@ NO_UPDATE_NOTIFIER=1 lkm --help
 
 ## License
 
-MIT
+MIT License. See [LICENSE](./LICENSE) for details.
