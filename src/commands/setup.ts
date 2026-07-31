@@ -36,6 +36,7 @@ export async function runSetup(
 
   try {
     reporter.info('LinkModel CLI setup');
+    reporter.info('Press Ctrl-C at any time to cancel.');
 
     const apiKey = await password({
       message: 'LinkModel API key',
