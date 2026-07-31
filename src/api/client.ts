@@ -1,11 +1,13 @@
 import { parseEnvelope, withRequestId, type Envelope } from './envelope.js';
 import { isTaskStatus, type CreateTaskData, type TaskStatusData } from './types.js';
+import { PACKAGE_NAME, VERSION } from '../generated/version.js';
 
 export const DEFAULT_BASE_URL = 'https://api.linkmodel.ai/api/v1';
 export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 /** Retry up to 3 times after the initial request. */
 export const DEFAULT_MAX_RETRIES = 3;
 const RETRY_BASE_DELAY_MS = 500;
+export const CLIENT_SOURCE = 'cli';
 
 /** Known business codes that indicate authentication failure even with HTTP 200. */
 const BUSINESS_AUTH_CODES: ReadonlySet<number> = new Set([401]);
@@ -51,6 +53,17 @@ export interface LinkmodelClientOptions {
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export function buildClientHeaders(apiKey: string, body?: unknown): Record<string, string> {
+  return {
+    Authorization: `Bearer ${apiKey}`,
+    Accept: 'application/json',
+    'User-Agent': `${PACKAGE_NAME}/${VERSION}`,
+    'X-LinkModel-Client': CLIENT_SOURCE,
+    'X-LinkModel-Client-Version': VERSION,
+    ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+  };
+}
 
 export class LinkmodelClient {
   private readonly apiKey: string;
@@ -132,11 +145,7 @@ export class LinkmodelClient {
     try {
       res = await this.fetchImpl(url, {
         method,
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          Accept: 'application/json',
-          ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-        },
+        headers: buildClientHeaders(this.apiKey, body),
         body: body !== undefined ? JSON.stringify(body) : undefined,
         signal: AbortSignal.timeout(this.requestTimeoutMs),
       });

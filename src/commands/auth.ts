@@ -1,4 +1,4 @@
-import { AuthError, DEFAULT_BASE_URL } from '../api/client.js';
+import { AuthError, buildClientHeaders, DEFAULT_BASE_URL } from '../api/client.js';
 import { parseEnvelope } from '../api/envelope.js';
 import {
   ENV_API_KEY,
@@ -115,10 +115,7 @@ export async function validateApiKey(apiKey: string, deps: CommandDeps): Promise
   try {
     res = await (deps.fetchImpl ?? fetch)(url, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-      },
+      headers: buildClientHeaders(apiKey),
       signal: AbortSignal.timeout(30_000),
     });
     text = await res.text();

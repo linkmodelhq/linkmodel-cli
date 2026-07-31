@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { ApiError, AuthError, LinkmodelClient, NetworkError } from '../src/api/client.js';
+import { PACKAGE_NAME, VERSION } from '../src/generated/version.js';
 
 type FetchHandler = (url: string, init?: RequestInit) => Promise<Response> | Response;
 
@@ -51,6 +52,11 @@ test('createTask:POST path, Bearer header, request body, msg envelope', async ()
   assert.equal(calls[0].init?.method, 'POST');
   const headers = calls[0].init?.headers as Record<string, string>;
   assert.equal(headers.Authorization, 'Bearer test-key');
+  assert.equal(headers.Accept, 'application/json');
+  assert.equal(headers['Content-Type'], 'application/json');
+  assert.equal(headers['User-Agent'], `${PACKAGE_NAME}/${VERSION}`);
+  assert.equal(headers['X-LinkModel-Client'], 'cli');
+  assert.equal(headers['X-LinkModel-Client-Version'], VERSION);
   assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
     model: 'gpt-image-2',
     prompt: 'a cat',
@@ -75,6 +81,11 @@ test('queryTask:GET path includes task_id, message envelope', async () => {
   assert.equal(calls[0].init?.method, 'GET');
   assert.match(calls[0].url, /\/query\/image-generation\?task_id=/);
   assert.ok(calls[0].url.includes(encodeURIComponent('task/with space')));
+  const headers = calls[0].init?.headers as Record<string, string>;
+  assert.equal(headers['User-Agent'], `${PACKAGE_NAME}/${VERSION}`);
+  assert.equal(headers['X-LinkModel-Client'], 'cli');
+  assert.equal(headers['X-LinkModel-Client-Version'], VERSION);
+  assert.equal(headers['Content-Type'], undefined);
 });
 
 test('unknown task status throws ApiError with request_id and is not silently accepted', async () => {
