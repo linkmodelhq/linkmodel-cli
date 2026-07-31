@@ -26,6 +26,8 @@ process.stderr.write(`
 LinkModel CLI installed.
 
 Start:
+  Create an API key: https://www.linkmodel.ai/
+  lkm auth login --api-key <key>
   lkm setup
   lkm --help
 

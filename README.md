@@ -50,6 +50,7 @@ https://github.com/linkmodelhq/linkmodel-cli/blob/main/install.md
 Follow these rules:
 - Install with npm: npm install -g linkmodel-cli
 - Verify with lkm --version, lkm --help, and lkm doctor --json
+- If no API key is configured, guide me to create one at https://www.linkmodel.ai/
 - Use lkm auth login --api-key <key> only through a secure local channel
 - Never print, log, or commit the full API key
 - Prefer --json for automation
@@ -76,6 +77,13 @@ lkm --help
 
 Global installs print a short next-step hint. Set
 `LINKMODEL_SKIP_POSTINSTALL=1` to silence that message in automated environments.
+
+If you do not have an API key yet, create one from your LinkModel account at
+[linkmodel.ai](https://www.linkmodel.ai/), then run:
+
+```sh
+lkm auth login --api-key <your-api-key>
+```
 
 ## Quick Start
 
