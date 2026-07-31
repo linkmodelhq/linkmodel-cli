@@ -25,10 +25,10 @@ if (!isGlobalInstall) {
 process.stderr.write(`
 LinkModel CLI installed.
 
-Start:
-  Create an API key: https://www.linkmodel.ai/
-  lkm auth login --api-key <key>
-  lkm setup
-  lkm --help
+Next steps:
+  1. Create an API key: https://www.linkmodel.ai/
+  2. Save it locally: lkm auth login --api-key <key>
+  3. Run setup: lkm setup
+  4. Check install: lkm doctor
 
 `);
