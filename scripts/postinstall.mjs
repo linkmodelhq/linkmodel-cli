@@ -25,13 +25,8 @@ if (!isGlobalInstall) {
 process.stderr.write(`
 LinkModel CLI installed.
 
-Get started:
+Start:
   lkm setup
-  lkm auth login --api-key <key>
-  lkm image "a red panda"
-  lkm video "Empty cinematic establishing shot of a misty city street after rain"
-
-Docs:
-  https://github.com/linkmodelhq/linkmodel-cli
+  lkm --help
 
 `);

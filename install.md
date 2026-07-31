@@ -65,6 +65,9 @@ For interactive local setup, use:
 lkm setup
 ```
 
+`lkm setup` prints the current configuration first and can be cancelled with
+Ctrl-C.
+
 If no key is configured, ask the user for a LinkModel API key through the secure
 local channel available in the current environment, then run the command in the
 user terminal:
@@ -111,6 +114,7 @@ Use these safe checks:
 
 ```sh
 lkm --help
+lkm doctor --json
 lkm auth status --json
 lkm models list --json
 lkm models show kling-v3 --json
@@ -152,6 +156,7 @@ lkm video status <task_id> --wait --no-download
 | Engine error during install | Node.js too old | Upgrade to Node.js 20+ |
 | Auth exits with code 3 | Missing or invalid API key | Re-run `lkm auth login --api-key <key>` |
 | Usage exits with code 2 | Missing key or invalid parameters | Read stderr or JSON `error` |
+| Doctor exits with code 1 | A required local or auth check failed | Inspect `lkm doctor` output |
 | Polling exits with code 4 | Task is still running | Run `lkm image status <task_id> --wait` or `lkm video status <task_id> --wait` |
 | URL no longer downloads | Signed artifact URL expired | Re-query status if possible, otherwise regenerate |
 

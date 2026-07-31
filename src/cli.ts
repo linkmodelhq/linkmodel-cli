@@ -28,6 +28,7 @@ import {
   runConfigSetApiKey,
   runConfigSetDefaultModel,
 } from './commands/config.js';
+import { runDoctor } from './commands/doctor.js';
 import { EXIT, runGen, type SharedGenOptions } from './commands/gen.js';
 import { runModelsList, runModelsShow } from './commands/models.js';
 import { runSetup } from './commands/setup.js';
@@ -211,6 +212,15 @@ export async function run(argv: string[]): Promise<number> {
       exitCode = await runSetup(opts);
     });
 
+  program
+    .command('doctor')
+    .description('Run local diagnostics')
+    .option('--api-key <key>', 'check this API key for the current command only')
+    .option('--json', 'output a single-line JSON')
+    .action(async (opts: { apiKey?: string; json?: boolean }) => {
+      exitCode = await runDoctor(opts);
+    });
+
   const config = program.command('config').description('Manage configuration');
   config
     .command('set')
@@ -274,7 +284,7 @@ export async function run(argv: string[]): Promise<number> {
 
   program.addHelpText(
     'after',
-    `\nExamples:\n  lkm setup                           Run interactive first-time setup\n  lkm image "a red panda" -q low      Generate an image (the word gen may be omitted)\n  lkm video "a misty valley drone shot"  Generate a video (the word gen may be omitted)\n  lkm image gen "a red panda" -q low  Same as above, explicit form\n  lkm image status <task_id>          Query a task\n`,
+    `\nExamples:\n  lkm setup                           Run interactive first-time setup\n  lkm doctor                          Run local diagnostics\n  lkm image "a red panda" -q low      Generate an image (the word gen may be omitted)\n  lkm video "a misty valley drone shot"  Generate a video (the word gen may be omitted)\n  lkm image gen "a red panda" -q low  Same as above, explicit form\n  lkm image status <task_id>          Query a task\n`,
   );
 
   if (argv.length <= 2) {

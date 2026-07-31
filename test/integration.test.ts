@@ -464,6 +464,7 @@ test('lkm with no args prints top-level help and exits 0; --help includes implic
   const help = await runCli(['--help']);
   assert.equal(help.code, 0);
   assert.match(help.stdout, /lkm setup/);
+  assert.match(help.stdout, /lkm doctor/);
   assert.match(help.stdout, /lkm image "a red panda"/);
   assert.match(help.stdout, /gen may be omitted/);
 
@@ -478,6 +479,18 @@ test('setup --json fails fast because setup is interactive', async () => {
   const payload = JSON.parse(r.stdout.trim());
   assert.equal(payload.ok, false);
   assert.match(payload.error, /Interactive setup requires a TTY/);
+});
+
+test('doctor --json reports local diagnostics and validates the API key', async () => {
+  const r = await runCli(['doctor', '--json']);
+  assert.equal(r.code, 0);
+  const payload = JSON.parse(r.stdout.trim());
+  assert.equal(payload.ok, true);
+  assert.equal(typeof payload.version, 'string');
+  assert.ok(Array.isArray(payload.checks));
+  assert.ok(payload.checks.some((check: { name: string; status: string }) => (
+    check.name === 'API key validation' && check.status === 'pass'
+  )));
 });
 
 test('--json contract: every error path emits exactly one JSON line with non-empty error', async () => {

@@ -57,6 +57,9 @@ Run the interactive setup:
 lkm setup
 ```
 
+`setup` shows current configuration first, then lets you configure an API key,
+default models, or both. Press `Ctrl-C` at any time to cancel.
+
 Or configure your API key directly:
 
 ```sh
@@ -231,6 +234,19 @@ lkm video status <task_id> --wait --no-download
 
 Server-side tasks continue running after local timeout or interruption. The CLI
 prints the exact status command to continue from the saved `task_id`.
+
+## Diagnostics
+
+Run local diagnostics when an install, config, or authentication issue is not
+obvious:
+
+```sh
+lkm doctor
+lkm doctor --json
+```
+
+`doctor` checks the Node.js version, CLI version, config file, API key source,
+API key validity, and npm update status.
 
 ## Model Defaults
 
