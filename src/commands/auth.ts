@@ -109,7 +109,7 @@ export function runAuthLogout(opts: AuthLogoutOptions = {}, deps: CommandDeps = 
 export async function validateApiKey(apiKey: string, deps: CommandDeps): Promise<void> {
   const env = deps.env ?? process.env;
   const baseUrl = (env.LINKMODEL_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
-  const url = `${baseUrl}/query/image-generation?task_id=__linkmodel_cli_auth_check__`;
+  const url = `${baseUrl}/auth/check`;
   let res: Response;
   let text: string;
   try {

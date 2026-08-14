@@ -16,7 +16,7 @@ const FAST_SCHEDULE = JSON.stringify([{ until: 0, interval: 50 }]);
 
 // ---------- mock linkmodel server ----------
 
-const counts = { create: 0, query: 0 };
+const counts = { authCheck: 0, create: 0, query: 0 };
 let origin = '';
 let server: http.Server;
 
@@ -40,6 +40,16 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
   // All /api/v1 endpoints require Bearer test-key.
   if (url.pathname.startsWith('/api/v1/') && req.headers.authorization !== 'Bearer test-key') {
     return sendJson(res, 401, { code: 401, msg: 'Invalid API key', request_id: 'r-401' });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/v1/auth/check') {
+    counts.authCheck++;
+    return sendJson(res, 200, {
+      code: 0,
+      msg: 'success',
+      data: { valid: true },
+      request_id: 'r-auth-check',
+    });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/v1/image-generation') {
@@ -792,12 +802,16 @@ test('auth login/status/logout verifies API key before saving, and logout remove
   const setModel = await runCli(['config', 'set', 'default-video-model', 'kling-v3'], { HOME: home });
   assert.equal(setModel.code, 0, setModel.stderr);
 
+  const authCheckBefore = counts.authCheck;
+  const queryBefore = counts.query;
   const login = await runCli(['auth', 'login', '--api-key', key], {
     HOME: home,
     LINKMODEL_API_KEY: undefined,
   });
   assert.equal(login.code, 0, login.stderr);
   assert.match(login.stderr, /verified and saved/);
+  assert.equal(counts.authCheck, authCheckBefore + 1);
+  assert.equal(counts.query, queryBefore, 'auth validation must not query a fake task');
 
   const status = await runCli(['auth', 'status', '--json'], {
     HOME: home,

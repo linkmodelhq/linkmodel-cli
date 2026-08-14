@@ -753,7 +753,7 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
     "seedance-2-0": {
       "prompt": {
         "minLength": 0,
-        "maxLength": 5000
+        "maxLength": 2500
       },
       "fields": {
         "audios": {
@@ -823,6 +823,102 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "flags": "--videos <url...>",
           "description": "videos",
           "maxItems": 3
+        }
+      }
+    },
+    "seedance-2-5": {
+      "prompt": {
+        "minLength": 1
+      },
+      "fields": {
+        "audio_list": {
+          "type": "urlArray",
+          "flags": "--audio-list <url...>",
+          "description": "Audios",
+          "maxItems": 10
+        },
+        "duration": {
+          "type": "integer",
+          "flags": "--duration <value>",
+          "description": "Duration",
+          "default": 5,
+          "choices": [
+            -1,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ]
+        },
+        "first_frame_image": {
+          "type": "string",
+          "flags": "--first-frame-image <value>",
+          "description": "First frame"
+        },
+        "image_list": {
+          "type": "urlArray",
+          "flags": "--image-list <url...>",
+          "description": "Images",
+          "maxItems": 30
+        },
+        "last_frame_image": {
+          "type": "string",
+          "flags": "--last-frame-image <value>",
+          "description": "Last frame"
+        },
+        "resolution": {
+          "type": "string",
+          "flags": "--resolution <value>",
+          "description": "Resolution",
+          "default": "720P",
+          "choices": [
+            "480P",
+            "720P"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect ratio",
+          "default": "16x9",
+          "choices": [
+            "16x9",
+            "1x1",
+            "21x9",
+            "3x4",
+            "4x3",
+            "9x16",
+            "adaptive"
+          ]
+        },
+        "video_list": {
+          "type": "urlArray",
+          "flags": "--video-list <url...>",
+          "description": "Videos",
+          "maxItems": 10
         }
       }
     },
