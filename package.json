@@ -1,6 +1,6 @@
 {
   "name": "linkmodel-cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Command-line client for the linkmodel API: generate images and videos end to end (create task, poll, download).",
   "license": "MIT",
   "type": "module",
