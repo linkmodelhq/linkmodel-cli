@@ -1,5 +1,5 @@
 /**
- * video modality: POST /video-generation + GET /query/video-generation.
+ * video modality: POST /videos/generations + GET /videos/generations/{task_id}.
  *
  * Default model: kling-v3.
  * Artifacts: after successful query, read file_url with output_videos fallback. Infer extension from video MIME and fall back to .mp4.
@@ -114,8 +114,8 @@ export const videoModality: ModalitySpec<VideoGenOptions> = {
   name: 'video',
   description: 'Video generation tasks',
   genDescription: 'Generate a video: create task, poll, download',
-  createPath: '/video-generation',
-  queryPath: '/query/video-generation',
+  createPath: '/videos/generations',
+  queryPath: '/videos/generations',
   artifactNoun: { singular: 'video', plural: 'videos' },
   defaultModelConfigKey: 'default-video-model',
 

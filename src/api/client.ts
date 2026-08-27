@@ -2,7 +2,7 @@ import { parseEnvelope, withRequestId, type Envelope } from './envelope.js';
 import { isTaskStatus, type CreateTaskData, type TaskStatusData } from './types.js';
 import { PACKAGE_NAME, VERSION } from '../generated/version.js';
 
-export const DEFAULT_BASE_URL = 'https://api.linkmodel.ai/api/v1';
+export const DEFAULT_BASE_URL = 'https://api.linkmodel.ai/v1';
 export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 /** Retry up to 3 times after the initial request. */
 export const DEFAULT_MAX_RETRIES = 3;
@@ -99,7 +99,7 @@ export class LinkmodelClient {
     taskId: string,
   ): Promise<Envelope<TData>> {
     const env = await this.requestWithRetry(() =>
-      this.request<TData>('GET', `${path}?task_id=${encodeURIComponent(taskId)}`),
+      this.request<TData>('GET', `${path}/${encodeURIComponent(taskId)}`),
     );
     // Do not silently downgrade: unknown task status throws with request_id.
     if (!isTaskStatus(env.data?.status)) {

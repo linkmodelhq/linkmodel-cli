@@ -1,7 +1,7 @@
 /**
  * image modality: the first ModalitySpec implementation.
  *
- * Endpoints: POST /image-generation + GET /query/image-generation
+ * Endpoints: POST /images/generations + GET /images/generations/{task_id}
  * Parameters: model (default gpt-image-2) / quality / size / images (reference image URLs)
  * Artifacts: output_images array; file extension is inferred from image MIME and falls back to .png
  */
@@ -148,8 +148,8 @@ export const imageModality: ModalitySpec<ImageGenOptions> = {
   name: 'image',
   description: 'Image generation tasks',
   genDescription: 'Generate an image: create task, poll, download',
-  createPath: '/image-generation',
-  queryPath: '/query/image-generation',
+  createPath: '/images/generations',
+  queryPath: '/images/generations',
   artifactNoun: { singular: 'image', plural: 'images' },
   defaultModelConfigKey: 'default-image-model',
 

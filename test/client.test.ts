@@ -14,7 +14,7 @@ function makeClient(handler: FetchHandler, extra?: { sleeps?: number[] }) {
   }) as unknown as typeof fetch;
   const client = new LinkmodelClient({
     apiKey: 'test-key',
-    baseUrl: 'https://api.test/api/v1',
+    baseUrl: 'https://api.test/v1',
     fetchImpl,
     sleep: async (ms) => {
       extra?.sleeps?.push(ms);
@@ -35,7 +35,7 @@ test('createTask:POST path, Bearer header, request body, msg envelope', async ()
       request_id: 'r-create',
     }),
   );
-  const env = await client.createTask('/image-generation', {
+  const env = await client.createTask('/images/generations', {
     model: 'gpt-image-2',
     prompt: 'a cat',
     quality: 'medium',
@@ -48,7 +48,7 @@ test('createTask:POST path, Bearer header, request body, msg envelope', async ()
   assert.equal(env.requestId, 'r-create');
 
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].url, 'https://api.test/api/v1/image-generation');
+  assert.equal(calls[0].url, 'https://api.test/v1/images/generations');
   assert.equal(calls[0].init?.method, 'POST');
   const headers = calls[0].init?.headers as Record<string, string>;
   assert.equal(headers.Authorization, 'Bearer test-key');
@@ -75,12 +75,11 @@ test('queryTask:GET path includes task_id, message envelope', async () => {
       request_id: 'r-q',
     }),
   );
-  const env = await client.queryTask('/query/image-generation', 'task/with space');
+  const env = await client.queryTask('/images/generations', 'task/with space');
   assert.equal(env.data.status, 'Success');
   assert.equal(env.message, 'ok');
   assert.equal(calls[0].init?.method, 'GET');
-  assert.match(calls[0].url, /\/query\/image-generation\?task_id=/);
-  assert.ok(calls[0].url.includes(encodeURIComponent('task/with space')));
+  assert.equal(calls[0].url, `https://api.test/v1/images/generations/${encodeURIComponent('task/with space')}`);
   const headers = calls[0].init?.headers as Record<string, string>;
   assert.equal(headers['User-Agent'], `${PACKAGE_NAME}/${VERSION}`);
   assert.equal(headers['X-LinkModel-Client'], 'cli');
@@ -92,7 +91,7 @@ test('unknown task status throws ApiError with request_id and is not silently ac
   const { client } = makeClient(() =>
     jsonResponse(200, { code: 0, message: 'ok', data: { status: 'Weird' }, request_id: 'r-w' }),
   );
-  await assert.rejects(client.queryTask('/query/image-generation', 't'), (err: unknown) => {
+  await assert.rejects(client.queryTask('/images/generations', 't'), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.match(err.message, /Unknown task status/);
     assert.match(err.message, /r-w/);
@@ -104,7 +103,7 @@ test('401 -> AuthError, no retry, message includes request_id', async () => {
   const { client, calls } = makeClient(() =>
     jsonResponse(401, { code: 401, msg: 'invalid key', request_id: 'r-401' }),
   );
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof AuthError);
     assert.ok(err instanceof ApiError);
     assert.equal(err.status, 401);
@@ -118,7 +117,7 @@ test('401 -> AuthError, no retry, message includes request_id', async () => {
 test('4xx responses such as 400 and 429 are never retried', async () => {
   for (const status of [400, 429]) {
     const { client, calls } = makeClient(() => jsonResponse(status, { code: status, msg: 'bad' }));
-    await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), ApiError);
+    await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), ApiError);
     assert.equal(calls.length, 1, `status ${status} should not retry`);
   }
 });
@@ -135,7 +134,7 @@ test('5xx uses exponential backoff retries(500ms→1s),returns after third attem
     },
     { sleeps },
   );
-  const env = await client.createTask('/image-generation', { model: 'm', prompt: 'p' });
+  const env = await client.createTask('/images/generations', { model: 'm', prompt: 'p' });
   assert.equal(env.data.task_id, 't-9');
   assert.equal(calls.length, 3);
   assert.deepEqual(sleeps, [500, 1000]);
@@ -147,7 +146,7 @@ test('persistent 5xx failure throws after initial request plus 3 retries', async
     () => jsonResponse(502, { code: 502, msg: 'bad gateway', request_id: 'r-502' }),
     { sleeps },
   );
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.equal((err as ApiError).status, 502);
     return true;
@@ -167,7 +166,7 @@ test('network errors also use exponential backoff retries', async () => {
     },
     { sleeps },
   );
-  const env = await client.createTask('/image-generation', { model: 'm', prompt: 'p' });
+  const env = await client.createTask('/images/generations', { model: 'm', prompt: 'p' });
   assert.equal(env.data.task_id, 't-7');
   assert.equal(calls.length, 3);
   assert.deepEqual(sleeps, [500, 1000]);
@@ -177,7 +176,7 @@ test('network errors throw NetworkError after retries are exhausted', async () =
   const { client, calls } = makeClient(() => {
     throw new TypeError('fetch failed');
   });
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), NetworkError);
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), NetworkError);
   assert.equal(calls.length, 4);
 });
 
@@ -198,10 +197,10 @@ test('response headers returned but body read failed -> still wraps as NetworkEr
       ),
   );
   await assert.rejects(
-    client.createTask('/image-generation', { model: 'm', prompt: 'p' }),
+    client.createTask('/images/generations', { model: 'm', prompt: 'p' }),
     (err: unknown) => {
       assert.ok(err instanceof NetworkError, `expected NetworkError, got ${(err as Error).name}`);
-      assert.match((err as Error).message, /image-generation/, 'error message should include URL');
+      assert.match((err as Error).message, /images\/generations/, 'error message should include URL');
       return true;
     },
   );
@@ -210,7 +209,7 @@ test('response headers returned but body read failed -> still wraps as NetworkEr
 
 test('2xx invalid envelope throws instead of silently accepting', async () => {
   const { client } = makeClient(() => new Response('<html>oops</html>', { status: 200 }));
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.match(err.message, /Invalid envelope/);
     return true;
@@ -225,7 +224,7 @@ test('HTTP 200 + non-zero business code such as insufficient balance -> ApiError
       request_id: 'r-billing',
     }),
   );
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.ok(!(err instanceof AuthError));
     assert.equal((err as ApiError).status, 200); // business error, does not trigger 5xx retries
@@ -241,7 +240,7 @@ test('HTTP 200 + missing code + msg success combines reason with server message 
   const { client, calls } = makeClient(() =>
     jsonResponse(200, { msg: 'success', data: { task_id: 't-1' }, request_id: 'no-code-case' }),
   );
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     // Includes both the missing-code explanation and server msg context.
     assert.match(err.message, /Response missing code field/);
@@ -257,7 +256,7 @@ test('HTTP 200 + auth business code 401 -> AuthError (exit 3), no retry', async 
   const { client, calls } = makeClient(() =>
     jsonResponse(200, { code: 401, msg: 'token expired', request_id: 'r-bauth' }),
   );
-  await assert.rejects(client.queryTask('/query/image-generation', 't'), (err: unknown) => {
+  await assert.rejects(client.queryTask('/images/generations', 't'), (err: unknown) => {
     assert.ok(err instanceof AuthError);
     assert.match(err.message, /token expired/);
     assert.match(err.message, /r-bauth/);
@@ -268,7 +267,7 @@ test('HTTP 200 + auth business code 401 -> AuthError (exit 3), no retry', async 
 
 test('HTTP 200 with missing code is treated as invalid rather than success', async () => {
   const { client, calls } = makeClient(() => jsonResponse(200, { data: { task_id: 't-1' } }));
-  await assert.rejects(client.createTask('/image-generation', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.match(err.message, /Response missing code field/);
     return true;

@@ -28,7 +28,7 @@ function makeDeps(openFiles: OpenFiles, json: boolean) {
     if (init?.method === 'POST') {
       return jsonResponse({ code: 0, msg: 'ok', data: { task_id: 't-open', price: 0 }, request_id: 'r' });
     }
-    if (u.includes('/query/image-generation')) {
+    if (u.includes('/images/generations/')) {
       return jsonResponse({
         code: 0,
         message: 'ok',

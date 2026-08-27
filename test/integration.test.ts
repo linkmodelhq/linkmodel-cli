@@ -37,12 +37,12 @@ function readBody(req: http.IncomingMessage): Promise<string> {
 async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
   const url = new URL(req.url ?? '/', 'http://placeholder');
 
-  // All /api/v1 endpoints require Bearer test-key.
-  if (url.pathname.startsWith('/api/v1/') && req.headers.authorization !== 'Bearer test-key') {
+  // All /v1 endpoints require Bearer test-key.
+  if (url.pathname.startsWith('/v1/') && req.headers.authorization !== 'Bearer test-key') {
     return sendJson(res, 401, { code: 401, msg: 'Invalid API key', request_id: 'r-401' });
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/v1/auth/check') {
+  if (req.method === 'GET' && url.pathname === '/v1/auth/check') {
     counts.authCheck++;
     return sendJson(res, 200, {
       code: 0,
@@ -52,7 +52,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
     });
   }
 
-  if (req.method === 'POST' && url.pathname === '/api/v1/image-generation') {
+  if (req.method === 'POST' && url.pathname === '/v1/images/generations') {
     counts.create++;
     const body = JSON.parse(await readBody(req));
     const { prompt } = body;
@@ -111,7 +111,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
     });
   }
 
-  if (req.method === 'POST' && url.pathname === '/api/v1/video-generation') {
+  if (req.method === 'POST' && url.pathname === '/v1/videos/generations') {
     counts.create++;
     const body = JSON.parse(await readBody(req));
     if (body.prompt === 'kling-case') {
@@ -142,9 +142,9 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
     });
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/v1/query/image-generation') {
+  if (req.method === 'GET' && url.pathname.startsWith('/v1/images/generations/')) {
     counts.query++;
-    const taskId = url.searchParams.get('task_id');
+    const taskId = decodeURIComponent(url.pathname.slice('/v1/images/generations/'.length));
     // Query endpoint uses message, covering the other half of envelope compatibility.
     if (taskId === 'task-ok') {
       return sendJson(res, 200, {
@@ -195,9 +195,9 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
     });
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/v1/query/video-generation') {
+  if (req.method === 'GET' && url.pathname.startsWith('/v1/videos/generations/')) {
     counts.query++;
-    const taskId = url.searchParams.get('task_id');
+    const taskId = decodeURIComponent(url.pathname.slice('/v1/videos/generations/'.length));
     if (taskId === 'video-ok') {
       return sendJson(res, 200, {
         code: 0,
@@ -268,7 +268,7 @@ function runCli(
   const env: NodeJS.ProcessEnv = {
     PATH: process.env.PATH,
     HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-')),
-    LINKMODEL_BASE_URL: `${origin}/api/v1`,
+    LINKMODEL_BASE_URL: `${origin}/v1`,
     LINKMODEL_POLL_SCHEDULE: FAST_SCHEDULE,
     LINKMODEL_API_KEY: 'test-key',
   };
@@ -718,7 +718,7 @@ test('Ctrl-C reports that the server task is still running and exits 130', async
   const env: NodeJS.ProcessEnv = {
     PATH: process.env.PATH,
     HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-')),
-    LINKMODEL_BASE_URL: `${origin}/api/v1`,
+    LINKMODEL_BASE_URL: `${origin}/v1`,
     LINKMODEL_API_KEY: 'test-key',
   };
   const child: ChildProcess = spawn(process.execPath, [CLI, 'image', 'gen', 'ok-case'], { env });

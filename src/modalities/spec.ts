@@ -26,9 +26,9 @@ export interface ModalitySpec<GenOpts = unknown> {
   readonly description: string;
   /** gen subcommand description */
   readonly genDescription: string;
-  /** Create endpoint path, such as /image-generation */
+  /** Create endpoint path, such as /images/generations */
   readonly createPath: string;
-  /** Query endpoint path, such as /query/image-generation */
+  /** Query endpoint collection path, such as /images/generations; the client appends /{task_id}. */
   readonly queryPath: string;
   readonly artifactNoun: ArtifactNoun;
   readonly defaultModelConfigKey?: 'default-image-model' | 'default-video-model';
