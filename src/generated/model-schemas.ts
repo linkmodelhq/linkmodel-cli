@@ -678,6 +678,79 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
         }
       }
     },
+    "MiniMax-H3": {
+      "prompt": {
+        "minLength": 1
+      },
+      "fields": {
+        "audio_url": {
+          "type": "url",
+          "flags": "--audio-url <url>",
+          "description": "Reference Audio"
+        },
+        "audios": {
+          "type": "urlArray",
+          "flags": "--audios <url...>",
+          "description": "Reference Audios",
+          "maxItems": 3
+        },
+        "duration": {
+          "type": "integer",
+          "flags": "--duration <value>",
+          "description": "Duration",
+          "default": 5,
+          "min": 4,
+          "max": 15
+        },
+        "first_frame_image": {
+          "type": "url",
+          "flags": "--first-frame-image <url>",
+          "description": "First Frame"
+        },
+        "images": {
+          "type": "urlArray",
+          "flags": "--images <url...>",
+          "description": "Reference Images",
+          "maxItems": 9
+        },
+        "last_frame_image": {
+          "type": "url",
+          "flags": "--last-frame-image <url>",
+          "description": "Last Frame"
+        },
+        "resolution": {
+          "type": "string",
+          "flags": "--resolution <value>",
+          "description": "Resolution",
+          "default": "768P",
+          "choices": [
+            "2K",
+            "768P"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect Ratio",
+          "default": "16x9",
+          "choices": [
+            "16x9",
+            "1x1",
+            "21x9",
+            "3x4",
+            "4x3",
+            "9x16",
+            "adaptive"
+          ]
+        },
+        "videos": {
+          "type": "urlArray",
+          "flags": "--videos <url...>",
+          "description": "Reference Videos",
+          "maxItems": 3
+        }
+      }
+    },
     "MiniMax-Hailuo-02": {
       "prompt": {
         "minLength": 1,
@@ -786,6 +859,12 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "type": "url",
           "flags": "--first-frame-image <url>",
           "description": "First Frame Image"
+        },
+        "images": {
+          "type": "stringArray",
+          "flags": "--images <value...>",
+          "description": "images",
+          "maxItems": 9
         },
         "last_frame_image": {
           "type": "url",

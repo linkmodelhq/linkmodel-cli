@@ -29,6 +29,17 @@ const MAX_VIDEOS = 3;
 
 export type VideoGenOptions = ModelGenOptions;
 
+const {
+  duration: _seedance20Duration,
+  resolution: _seedance20Resolution,
+  size: _seedance20Size,
+  first_frame_image: seedance20FirstFrameImage,
+  last_frame_image: seedance20LastFrameImage,
+  audios: seedance20Audios,
+  videos: seedance20Videos,
+  ...seedance20GeneratedFields
+} = GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields;
+
 export const VIDEO_MODEL_SCHEMA: ModelSchema = {
   ...GENERATED_VIDEO_MODEL_SCHEMA,
   defaultModel: DEFAULT_MODEL,
@@ -38,6 +49,7 @@ export const VIDEO_MODEL_SCHEMA: ModelSchema = {
       ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'],
       prompt: { minLength: 1, maxLength: MAX_PROMPT_LENGTH },
       fields: {
+        ...seedance20GeneratedFields,
         duration: {
           ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields.duration,
           flags: '-d, --duration <seconds>',
@@ -57,26 +69,26 @@ export const VIDEO_MODEL_SCHEMA: ModelSchema = {
           default: '16x9',
         },
         firstFrameImage: {
-          ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields.first_frame_image,
+          ...seedance20FirstFrameImage,
           flags: '--first-frame-image <url>',
           apiName: 'first_frame_image',
           description: 'first frame image URL',
         },
         lastFrameImage: {
-          ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields.last_frame_image,
+          ...seedance20LastFrameImage,
           flags: '--last-frame-image <url>',
           apiName: 'last_frame_image',
           description: 'last frame image URL',
         },
         audios: {
-          ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields.audios,
+          ...seedance20Audios,
           flags: '--audio <url...>',
           rawKey: 'audio',
           description: 'audio URL (repeatable, max 3)',
           maxItems: MAX_AUDIOS,
         },
         videos: {
-          ...GENERATED_VIDEO_MODEL_SCHEMA.models['seedance-2-0'].fields.videos,
+          ...seedance20Videos,
           flags: '--video <url...>',
           rawKey: 'video',
           description: 'reference video URL (repeatable, max 3)',
