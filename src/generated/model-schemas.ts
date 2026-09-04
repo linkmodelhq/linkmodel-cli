@@ -84,106 +84,9 @@ export const GENERATED_IMAGE_MODEL_SCHEMA: ModelSchema = {
         }
       }
     },
-    "gemini-3-pro-image-preview": {
-      "prompt": {
-        "minLength": 1,
-        "maxLength": 100000
-      },
-      "fields": {
-        "images": {
-          "type": "urlArray",
-          "flags": "--images <url...>",
-          "description": "Reference Images",
-          "minItems": 1,
-          "maxItems": 10
-        },
-        "quality": {
-          "type": "string",
-          "flags": "--quality <value>",
-          "description": "Quality",
-          "default": "1K",
-          "choices": [
-            "1K",
-            "2K",
-            "4K"
-          ]
-        },
-        "size": {
-          "type": "string",
-          "flags": "--size <value>",
-          "description": "Size",
-          "choices": [
-            "16x9",
-            "1x1",
-            "21x9",
-            "2x3",
-            "3x2",
-            "3x4",
-            "4x3",
-            "4x5",
-            "5x4",
-            "9x16"
-          ]
-        }
-      }
-    },
     "gemini-3.1-flash-image": {
       "prompt": {
         "minLength": 1
-      },
-      "fields": {
-        "images": {
-          "type": "urlArray",
-          "flags": "--images <url...>",
-          "description": "Reference Images",
-          "minItems": 1,
-          "maxItems": 10
-        },
-        "quality": {
-          "type": "string",
-          "flags": "--quality <value>",
-          "description": "Quality",
-          "default": "1K",
-          "choices": [
-            "0.5K",
-            "1K",
-            "2K",
-            "4K"
-          ]
-        },
-        "size": {
-          "type": "string",
-          "flags": "--size <value>",
-          "description": "size",
-          "choices": [
-            "16:9",
-            "16x9",
-            "1:1",
-            "1x1",
-            "21:9",
-            "21x9",
-            "2:3",
-            "2x3",
-            "3:2",
-            "3:4",
-            "3x2",
-            "3x4",
-            "4:3",
-            "4:5",
-            "4x3",
-            "4x5",
-            "5:4",
-            "5x4",
-            "9:16",
-            "9x16"
-          ]
-        }
-      }
-    },
-    "gemini-3.1-flash-image-preview": {
-      "prompt": {
-        "minLength": 1,
-        "maxLength": 200000
       },
       "fields": {
         "images": {
@@ -905,14 +808,188 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
         }
       }
     },
+    "seedance-2-0-fast": {
+      "prompt": {
+        "minLength": 1,
+        "maxLength": 5000
+      },
+      "fields": {
+        "audios": {
+          "type": "urlArray",
+          "flags": "--audios <url...>",
+          "description": "Reference audios",
+          "maxItems": 3
+        },
+        "duration": {
+          "type": "integer",
+          "flags": "--duration <value>",
+          "description": "Duration",
+          "default": 5,
+          "choices": [
+            -1,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "extends.audio": {
+          "type": "bool",
+          "flags": "--extends-audio",
+          "description": "Generate audio"
+        },
+        "first_frame_image": {
+          "type": "url",
+          "flags": "--first-frame-image <url>",
+          "description": "First frame image"
+        },
+        "images": {
+          "type": "urlArray",
+          "flags": "--images <url...>",
+          "description": "Reference images",
+          "maxItems": 9
+        },
+        "last_frame_image": {
+          "type": "url",
+          "flags": "--last-frame-image <url>",
+          "description": "Last frame image"
+        },
+        "resolution": {
+          "type": "string",
+          "flags": "--resolution <value>",
+          "description": "Resolution",
+          "default": "720P",
+          "choices": [
+            "480P",
+            "720P"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect ratio",
+          "default": "adaptive",
+          "choices": [
+            "16x9",
+            "1x1",
+            "21x9",
+            "3x4",
+            "4x3",
+            "9x16",
+            "adaptive"
+          ]
+        },
+        "videos": {
+          "type": "urlArray",
+          "flags": "--videos <url...>",
+          "description": "Reference videos",
+          "maxItems": 3
+        }
+      }
+    },
+    "seedance-2-0-mini": {
+      "prompt": {
+        "minLength": 1,
+        "maxLength": 5000
+      },
+      "fields": {
+        "audios": {
+          "type": "urlArray",
+          "flags": "--audios <url...>",
+          "description": "Reference audios",
+          "maxItems": 3
+        },
+        "duration": {
+          "type": "integer",
+          "flags": "--duration <value>",
+          "description": "Duration",
+          "default": 5,
+          "choices": [
+            -1,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "extends.audio": {
+          "type": "bool",
+          "flags": "--extends-audio",
+          "description": "Generate audio"
+        },
+        "first_frame_image": {
+          "type": "url",
+          "flags": "--first-frame-image <url>",
+          "description": "First frame image"
+        },
+        "images": {
+          "type": "urlArray",
+          "flags": "--images <url...>",
+          "description": "Reference images",
+          "maxItems": 9
+        },
+        "last_frame_image": {
+          "type": "url",
+          "flags": "--last-frame-image <url>",
+          "description": "Last frame image"
+        },
+        "resolution": {
+          "type": "string",
+          "flags": "--resolution <value>",
+          "description": "Resolution",
+          "default": "720P",
+          "choices": [
+            "480P",
+            "720P"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect ratio",
+          "default": "adaptive",
+          "choices": [
+            "16x9",
+            "1x1",
+            "21x9",
+            "3x4",
+            "4x3",
+            "9x16",
+            "adaptive"
+          ]
+        },
+        "videos": {
+          "type": "urlArray",
+          "flags": "--videos <url...>",
+          "description": "Reference videos",
+          "maxItems": 3
+        }
+      }
+    },
     "seedance-2-5": {
       "prompt": {
         "minLength": 1
       },
       "fields": {
-        "audio_list": {
+        "audios": {
           "type": "urlArray",
-          "flags": "--audio-list <url...>",
+          "flags": "--audios <url...>",
           "description": "Audios",
           "maxItems": 10
         },
@@ -920,7 +997,7 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "type": "integer",
           "flags": "--duration <value>",
           "description": "Duration",
-          "default": 5,
+          "default": -1,
           "choices": [
             -1,
             4,
@@ -957,9 +1034,9 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "flags": "--first-frame-image <value>",
           "description": "First frame"
         },
-        "image_list": {
+        "images": {
           "type": "urlArray",
-          "flags": "--image-list <url...>",
+          "flags": "--images <url...>",
           "description": "Images",
           "maxItems": 30
         },
@@ -993,9 +1070,9 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
             "adaptive"
           ]
         },
-        "video_list": {
+        "videos": {
           "type": "urlArray",
-          "flags": "--video-list <url...>",
+          "flags": "--videos <url...>",
           "description": "Videos",
           "maxItems": 10
         }
