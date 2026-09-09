@@ -220,6 +220,180 @@ export const GENERATED_IMAGE_MODEL_SCHEMA: ModelSchema = {
         }
       }
     },
+    "gpt-image-2.5-flare": {
+      "prompt": {
+        "minLength": 1,
+        "maxLength": 32000
+      },
+      "fields": {
+        "background": {
+          "type": "string",
+          "flags": "--background <value>",
+          "description": "Background",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "opaque",
+            "transparent"
+          ]
+        },
+        "extends.edit.mask": {
+          "type": "url",
+          "flags": "--extends-edit-mask <url>",
+          "description": "Mask"
+        },
+        "images": {
+          "type": "urlArray",
+          "flags": "--images <url...>",
+          "description": "Reference Images",
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "max_images": {
+          "type": "integer",
+          "flags": "--max-images <value>",
+          "description": "Number of Images",
+          "default": 1,
+          "min": 1,
+          "max": 10
+        },
+        "moderation": {
+          "type": "string",
+          "flags": "--moderation <value>",
+          "description": "Moderation",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "low"
+          ]
+        },
+        "output_compression": {
+          "type": "integer",
+          "flags": "--output-compression <value>",
+          "description": "Output Compression",
+          "min": 0,
+          "max": 100
+        },
+        "output_format": {
+          "type": "string",
+          "flags": "--output-format <value>",
+          "description": "Output Format",
+          "default": "png",
+          "choices": [
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        },
+        "quality": {
+          "type": "string",
+          "flags": "--quality <value>",
+          "description": "Quality",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "high",
+            "low",
+            "max",
+            "medium",
+            "xhigh"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Size",
+          "default": "auto"
+        }
+      }
+    },
+    "gpt-image-2.5-sunburst": {
+      "prompt": {
+        "minLength": 1,
+        "maxLength": 32000
+      },
+      "fields": {
+        "background": {
+          "type": "string",
+          "flags": "--background <value>",
+          "description": "Background",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "opaque",
+            "transparent"
+          ]
+        },
+        "extends.edit.mask": {
+          "type": "url",
+          "flags": "--extends-edit-mask <url>",
+          "description": "Mask"
+        },
+        "images": {
+          "type": "urlArray",
+          "flags": "--images <url...>",
+          "description": "Reference Images",
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "max_images": {
+          "type": "integer",
+          "flags": "--max-images <value>",
+          "description": "Number of Images",
+          "default": 1,
+          "min": 1,
+          "max": 10
+        },
+        "moderation": {
+          "type": "string",
+          "flags": "--moderation <value>",
+          "description": "Moderation",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "low"
+          ]
+        },
+        "output_compression": {
+          "type": "integer",
+          "flags": "--output-compression <value>",
+          "description": "Output Compression",
+          "min": 0,
+          "max": 100
+        },
+        "output_format": {
+          "type": "string",
+          "flags": "--output-format <value>",
+          "description": "Output Format",
+          "default": "png",
+          "choices": [
+            "jpeg",
+            "png",
+            "webp"
+          ]
+        },
+        "quality": {
+          "type": "string",
+          "flags": "--quality <value>",
+          "description": "Quality",
+          "default": "auto",
+          "choices": [
+            "auto",
+            "high",
+            "low",
+            "max",
+            "medium",
+            "xhigh"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Size",
+          "default": "auto"
+        }
+      }
+    },
     "seedream-4.0": {
       "prompt": {
         "minLength": 1
@@ -1075,49 +1249,6 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "flags": "--videos <url...>",
           "description": "Videos",
           "maxItems": 10
-        }
-      }
-    },
-    "sora-2": {
-      "prompt": {
-        "minLength": 1,
-        "maxLength": 2000
-      },
-      "fields": {
-        "duration": {
-          "type": "integer",
-          "flags": "--duration <value>",
-          "description": "Duration",
-          "default": 4,
-          "choices": [
-            4,
-            8,
-            12
-          ]
-        },
-        "first_frame_image": {
-          "type": "url",
-          "flags": "--first-frame-image <url>",
-          "description": "First Frame Image"
-        },
-        "resolution": {
-          "type": "string",
-          "flags": "--resolution <value>",
-          "description": "Resolution",
-          "default": "720P",
-          "choices": [
-            "720P"
-          ]
-        },
-        "size": {
-          "type": "string",
-          "flags": "--size <value>",
-          "description": "Size",
-          "default": "1280x720",
-          "choices": [
-            "1280x720",
-            "720x1280"
-          ]
         }
       }
     },
