@@ -60,6 +60,28 @@ test('validate: max/min, prompt length, url arrays', () => {
   assert.ok(errors.some((e) => e.includes('videos must contain only valid URLs')));
 });
 
+test('validate: optional arrays do not enforce minItems when omitted', () => {
+  const optionalArraySchema: ModelSchema = {
+    defaultModel: 'm',
+    models: {
+      m: {
+        prompt: { minLength: 1 },
+        fields: {
+          images: {
+            type: 'urlArray',
+            flags: '--images <url...>',
+            description: 'reference images',
+            minItems: 1,
+          },
+        },
+      },
+    },
+  };
+  const opts = parseModelGenOptions(optionalArraySchema, { model: 'm' });
+
+  assert.deepEqual(validateModelGen(optionalArraySchema, 'a cat', opts), []);
+});
+
 test('parse/build: absent optional numeric fields are omitted, not serialized as null', () => {
   const optionalNumericSchema: ModelSchema = {
     defaultModel: 'm',

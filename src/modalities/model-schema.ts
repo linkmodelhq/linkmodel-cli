@@ -208,7 +208,7 @@ export function validateModelGen(
       errors.push(`${name} must be a valid URL`);
     }
     if ((field.type === 'stringArray' || field.type === 'urlArray') && Array.isArray(value)) {
-      if (field.minItems !== undefined && value.length < field.minItems) {
+      if (!isEmpty && field.minItems !== undefined && value.length < field.minItems) {
         errors.push(`Too few ${name}: min ${field.minItems}, got ${value.length}`);
       }
       if (field.maxItems !== undefined && value.length > field.maxItems) {
