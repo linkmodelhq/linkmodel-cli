@@ -29,6 +29,17 @@ const schemas: Record<string, UpstreamParameterSchema> = {
   },
 };
 
+test('untranslated upstream descriptions fall back to English labels or field names', () => {
+  const schema = toModelSchema('image', models, {
+    'gpt-image-2': { fields: [
+      { name: 'videos', type: 'array', description: '\u89c6\u9891\u53c2\u8003', ui: { label: 'Video references' } },
+      { name: 'images', type: 'array', description: '\u56fe\u7247', ui: { label: '\u56fe\u7247' } },
+    ] },
+  });
+  assert.equal(schema.models['gpt-image-2'].fields.videos.description, 'Video references');
+  assert.equal(schema.models['gpt-image-2'].fields.images.description, 'images');
+});
+
 test('transforms image parameter constraints and excludes model/prompt fields', () => {
   const schema = toModelSchema('image', models, schemas);
   assert.equal(schema.defaultModel, 'gpt-image-2');

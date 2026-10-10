@@ -189,8 +189,10 @@ export function validateModelGen(
       || (typeof value === 'string' && value.trim().length === 0)
       || (Array.isArray(value) && value.length === 0);
     if (field.required && isEmpty) errors.push(`${name} is required`);
-    if (field.choices && value !== undefined && !field.choices.map(String).includes(String(value))) {
-      errors.push(`${key} must be one of: ${field.choices.join(', ')}`);
+    const choiceValues = Array.isArray(value) ? value : [value];
+    const choices = field.choices?.map(String);
+    if (choices && value !== undefined && choiceValues.some((item) => !choices.includes(String(item)))) {
+      errors.push(`${key} must be one of: ${choices.join(', ')}`);
     }
     if (typeof value === 'number') {
       if (field.min !== undefined && value < field.min) errors.push(`${key} must be >= ${field.min}`);

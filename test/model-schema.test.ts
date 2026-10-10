@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { IMAGE_MODEL_SCHEMA } from '../src/modalities/image.js';
+import { VIDEO_MODEL_SCHEMA } from '../src/modalities/video.js';
+
 import {
   buildModelCreateRequest,
   parseModelGenOptions,
@@ -23,6 +26,47 @@ const schema: ModelSchema = {
     },
   },
 };
+
+test('Nano Banana 2.1 accepts optional and multiple response modalities', () => {
+  const defaults = parseModelGenOptions(IMAGE_MODEL_SCHEMA, { model: 'gemini-nano-banana-2.1' });
+  assert.deepEqual(validateModelGen(IMAGE_MODEL_SCHEMA, 'a cat', defaults), []);
+  const opts = parseModelGenOptions(IMAGE_MODEL_SCHEMA, {
+    model: 'gemini-nano-banana-2.1',
+    extendsResponseModalities: ['IMAGE', 'TEXT'],
+    extendsThinkingLevel: 'HIGH',
+  });
+  assert.deepEqual(validateModelGen(IMAGE_MODEL_SCHEMA, 'a cat', opts), []);
+  assert.deepEqual(buildModelCreateRequest(IMAGE_MODEL_SCHEMA, 'a cat', opts).extends, {
+    response_modalities: ['IMAGE', 'TEXT'], thinking_level: 'HIGH',
+  });
+  opts['extends.response_modalities'] = ['IMAGE', 'INVALID'];
+  assert.ok(validateModelGen(IMAGE_MODEL_SCHEMA, 'a cat', opts).some((e) => e.includes('extends.response_modalities must be one of')));
+});
+
+test('Wan 3.0 builds defaults and rejects unsupported duration and resolution', () => {
+  const opts = parseModelGenOptions(VIDEO_MODEL_SCHEMA, { model: 'wan3.0-video' });
+  assert.deepEqual(validateModelGen(VIDEO_MODEL_SCHEMA, 'a cat', opts), []);
+  assert.deepEqual(buildModelCreateRequest(VIDEO_MODEL_SCHEMA, 'a cat', opts), {
+    model: 'wan3.0-video', prompt: 'a cat', duration: 5, resolution: '1080P',
+    seed: -1, size: 'adaptive', extends: { audio: true, prompt_extend: true, watermark: false },
+  });
+  const invalid = parseModelGenOptions(VIDEO_MODEL_SCHEMA, { model: 'wan3.0-video', duration: '31', resolution: '4K' });
+  const errors = validateModelGen(VIDEO_MODEL_SCHEMA, 'a cat', invalid);
+  assert.ok(errors.some((e) => e.includes('duration must be one of')));
+  assert.ok(errors.some((e) => e.includes('resolution must be one of')));
+});
+
+test('GPT Image 2 mask is URL-validated and nested under extends.edit', () => {
+  const opts = parseModelGenOptions(IMAGE_MODEL_SCHEMA, {
+    model: 'gpt-image-2', extendsEditMask: 'https://example.com/mask.png',
+  });
+  assert.deepEqual(validateModelGen(IMAGE_MODEL_SCHEMA, 'a cat', opts), []);
+  assert.deepEqual(buildModelCreateRequest(IMAGE_MODEL_SCHEMA, 'a cat', opts).extends, {
+    edit: { mask: 'https://example.com/mask.png' },
+  });
+  opts['extends.edit.mask'] = 'invalid';
+  assert.ok(validateModelGen(IMAGE_MODEL_SCHEMA, 'a cat', opts).some((e) => e.includes('extends.edit.mask must be a valid URL')));
+});
 
 test('parse/build: bool, float, dotted fields become nested request body', () => {
   const opts = parseModelGenOptions(schema, {

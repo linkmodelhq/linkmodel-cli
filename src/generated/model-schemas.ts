@@ -178,12 +178,162 @@ export const GENERATED_IMAGE_MODEL_SCHEMA: ModelSchema = {
         }
       }
     },
+    "gemini-nano-banana-2.1": {
+      "prompt": {
+        "minLength": 1
+      },
+      "fields": {
+        "extends.response_modalities": {
+          "type": "stringArray",
+          "flags": "--extends-response-modalities <value...>",
+          "description": "Response modalities",
+          "choices": [
+            "IMAGE",
+            "TEXT"
+          ],
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "extends.thinking_level": {
+          "type": "string",
+          "flags": "--extends-thinking-level <value>",
+          "description": "Thinking level",
+          "choices": [
+            "HIGH",
+            "MEDIUM",
+            "MINIMAL"
+          ]
+        },
+        "extends.video_mime_type": {
+          "type": "string",
+          "flags": "--extends-video-mime-type <value>",
+          "description": "Video MIME type",
+          "choices": [
+            "video/3gpp",
+            "video/avi",
+            "video/mp4",
+            "video/mpeg",
+            "video/mpg",
+            "video/quicktime",
+            "video/webm",
+            "video/wmv",
+            "video/x-flv"
+          ]
+        },
+        "extends.video_url": {
+          "type": "string",
+          "flags": "--extends-video-url <value>",
+          "description": "Video URL"
+        },
+        "extends.videos": {
+          "type": "stringArray",
+          "flags": "--extends-videos <value...>",
+          "description": "Video references",
+          "maxItems": 10
+        },
+        "image_is_base64": {
+          "type": "stringArray",
+          "flags": "--image-is-base64 <value...>",
+          "description": "Reference image encoding",
+          "maxItems": 14
+        },
+        "images": {
+          "type": "stringArray",
+          "flags": "--images <value...>",
+          "description": "Reference images",
+          "maxItems": 14
+        },
+        "max_images": {
+          "type": "integer",
+          "flags": "--max-images <value>",
+          "description": "Output images",
+          "default": 1,
+          "min": 1,
+          "max": 1
+        },
+        "output_compression": {
+          "type": "integer",
+          "flags": "--output-compression <value>",
+          "description": "JPEG quality",
+          "min": 0,
+          "max": 100
+        },
+        "output_format": {
+          "type": "string",
+          "flags": "--output-format <value>",
+          "description": "Output format",
+          "choices": [
+            "jpeg",
+            "png"
+          ]
+        },
+        "quality": {
+          "type": "string",
+          "flags": "--quality <value>",
+          "description": "Image resolution",
+          "default": "1K",
+          "choices": [
+            "1K",
+            "2K",
+            "4K"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect ratio",
+          "choices": [
+            "16:9",
+            "16x9",
+            "1:1",
+            "1:4",
+            "1:8",
+            "1x1",
+            "1x4",
+            "1x8",
+            "21:9",
+            "21x9",
+            "2:3",
+            "2x3",
+            "3:2",
+            "3:4",
+            "3x2",
+            "3x4",
+            "4:1",
+            "4:3",
+            "4:5",
+            "4x1",
+            "4x3",
+            "4x5",
+            "5:4",
+            "5x4",
+            "8:1",
+            "8x1",
+            "9:16",
+            "9:21",
+            "9x16",
+            "9x21"
+          ]
+        },
+        "videos": {
+          "type": "stringArray",
+          "flags": "--videos <value...>",
+          "description": "videos",
+          "maxItems": 10
+        }
+      }
+    },
     "gpt-image-2": {
       "prompt": {
         "minLength": 1,
         "maxLength": 32000
       },
       "fields": {
+        "extends.edit.mask": {
+          "type": "url",
+          "flags": "--extends-edit-mask <url>",
+          "description": "Mask"
+        },
         "images": {
           "type": "urlArray",
           "flags": "--images <url...>",
@@ -1286,6 +1436,113 @@ export const GENERATED_VIDEO_MODEL_SCHEMA: ModelSchema = {
           "choices": [
             "1080P",
             "720P"
+          ]
+        }
+      }
+    },
+    "wan3.0-video": {
+      "prompt": {
+        "minLength": 1,
+        "maxLength": 20000
+      },
+      "fields": {
+        "duration": {
+          "type": "integer",
+          "flags": "--duration <value>",
+          "description": "Duration",
+          "default": 5,
+          "choices": [
+            -1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ]
+        },
+        "extends.audio": {
+          "type": "bool",
+          "flags": "--extends-audio",
+          "description": "Generate audio",
+          "default": true
+        },
+        "extends.prompt_extend": {
+          "type": "bool",
+          "flags": "--extends-prompt-extend",
+          "description": "Enhance prompt",
+          "default": true
+        },
+        "extends.watermark": {
+          "type": "bool",
+          "flags": "--extends-watermark",
+          "description": "Add watermark",
+          "default": false
+        },
+        "first_frame_image": {
+          "type": "string",
+          "flags": "--first-frame-image <value>",
+          "description": "First frame image URL"
+        },
+        "last_frame_image": {
+          "type": "string",
+          "flags": "--last-frame-image <value>",
+          "description": "Last frame image URL (optional)"
+        },
+        "resolution": {
+          "type": "string",
+          "flags": "--resolution <value>",
+          "description": "Resolution",
+          "default": "1080P",
+          "choices": [
+            "1080P",
+            "480P",
+            "720P"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "flags": "--seed <value>",
+          "description": "Seed",
+          "default": -1,
+          "min": -1,
+          "max": 2147483647
+        },
+        "size": {
+          "type": "string",
+          "flags": "--size <value>",
+          "description": "Aspect ratio",
+          "default": "adaptive",
+          "choices": [
+            "16x9",
+            "1x1",
+            "3x4",
+            "4x3",
+            "9x16",
+            "adaptive"
           ]
         }
       }

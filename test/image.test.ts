@@ -122,6 +122,6 @@ test('validateGen:size errors are included in validation errors', () => {
 test('parseGenOptions:normalizes raw Commander opts', () => {
   assert.deepEqual(
     imageModality.parseGenOptions({ quality: 'high', size: 'auto', image: ['u1'] }),
-    { model: 'gpt-image-2', quality: 'high', size: 'auto', images: ['u1'] },
+    { model: 'gpt-image-2', quality: 'high', size: 'auto', images: ['u1'], 'extends.edit.mask': undefined },
   );
 });

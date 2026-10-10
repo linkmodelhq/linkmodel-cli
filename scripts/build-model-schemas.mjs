@@ -66,6 +66,13 @@ function defaultValue(field) {
   return field.default ?? field.constraints?.default;
 }
 
+function fieldDescription(field) {
+  // Upstream English schemas can contain untranslated labels; keep CLI help English.
+  const cjk = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+  return [field.description, field.ui?.label, field.name]
+    .find((value) => typeof value === 'string' && value.trim() && !cjk.test(value)) ?? field.name;
+}
+
 function modelSchema(mode, models, schemas) {
   const selected = models.filter((model) => supportsMode(model, mode)).sort((a, b) => a.name.localeCompare(b.name));
   const preferredDefault = mode === 'image' ? 'gpt-image-2' : 'kling-v3';
@@ -79,7 +86,7 @@ function modelSchema(mode, models, schemas) {
       if (!field.name || field.name === 'model' || field.name === 'prompt') continue;
       if (field.type === 'object' && [...names].some((name) => name.startsWith(`${field.name}.`))) continue;
       const type = fieldType(field);
-      const spec = { type, flags: fieldFlags(field.name, type), description: field.description ?? field.ui?.label ?? field.name };
+      const spec = { type, flags: fieldFlags(field.name, type), description: fieldDescription(field) };
       const fallback = defaultValue(field);
       if (fallback !== undefined) spec.default = fallback;
       if (field.required === true) spec.required = true;

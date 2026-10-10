@@ -65,13 +65,20 @@ function defaultValue(field: UpstreamField): unknown {
   return field.default ?? field.constraints?.default;
 }
 
+function fieldDescription(field: UpstreamField): string {
+  // Upstream English schemas can contain untranslated labels; keep CLI help English.
+  const cjk = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+  return [field.description, field.ui?.label, field.name]
+    .find((value): value is string => typeof value === 'string' && !!value.trim() && !cjk.test(value)) ?? field.name;
+}
+
 function toFieldSpec(field: UpstreamField): ModelFieldSpec {
   const type = fieldType(field);
   const fallback = defaultValue(field);
   return {
     type,
     flags: fieldFlags(field.name, type),
-    description: field.description ?? field.ui?.label ?? field.name,
+    description: fieldDescription(field),
     ...(fallback !== undefined ? { default: fallback } : {}),
     ...(field.required === true ? { required: true } : {}),
     ...(choices(field) ? { choices: choices(field) } : {}),
