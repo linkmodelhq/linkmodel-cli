@@ -29,6 +29,8 @@
     "release:major": "npm version major",
     "pretest": "node scripts/write-version.mjs",
     "test": "npm run check:i18n && tsc -p tsconfig.test.json && node --test \"test-dist/test/*.test.js\"",
+    "test:coverage": "node scripts/test-coverage.mjs",
+    "sonar": "node scripts/sonar-scan.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

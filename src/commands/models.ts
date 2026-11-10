@@ -30,7 +30,7 @@ export function runModelsList(opts: ModelsListOptions = {}, deps: CommandDeps = 
 
   const models = modalities.flatMap((modality) => {
     const schema = SCHEMAS[modality];
-    return Object.keys(schema.models).sort().map((name) => ({
+    return Object.keys(schema.models).sort((a, b) => a.localeCompare(b)).map((name) => ({
       modality,
       name,
       default: name === schema.defaultModel,

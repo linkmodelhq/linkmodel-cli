@@ -1,5 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { parseEnvelope, withRequestId, type Envelope } from './envelope.js';
-import { isTaskStatus, type CreateTaskData, type TaskStatusData } from './types.js';
+import { isTaskStatus, type ApiKeyQuotaData, type CreateTaskData, type TaskStatusData } from './types.js';
 import { PACKAGE_NAME, VERSION } from '../generated/version.js';
 
 export const DEFAULT_BASE_URL = 'https://api.linkmodel.ai/v1';
@@ -17,6 +18,7 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly requestId?: string,
+    readonly code?: number,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -54,7 +56,11 @@ export interface LinkmodelClientOptions {
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-export function buildClientHeaders(apiKey: string, body?: unknown): Record<string, string> {
+export function buildClientHeaders(
+  apiKey: string,
+  body?: unknown,
+  extraHeaders?: Record<string, string>,
+): Record<string, string> {
   return {
     Authorization: `Bearer ${apiKey}`,
     Accept: 'application/json',
@@ -62,6 +68,7 @@ export function buildClientHeaders(apiKey: string, body?: unknown): Record<strin
     'X-LinkModel-Client': CLIENT_SOURCE,
     'X-LinkModel-Client-Version': VERSION,
     ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+    ...extraHeaders,
   };
 }
 
@@ -85,9 +92,28 @@ export class LinkmodelClient {
 
   /**
    * Create a task. Endpoint path and body come from ModalitySpec; the client is modality-agnostic.
+   * INVARIANT: Never retries automatically. Network failures or 5xx errors on create
+   * do not retry to eliminate any risk of double billing the user.
    */
-  createTask<TData = CreateTaskData>(path: string, body: unknown): Promise<Envelope<TData>> {
-    return this.requestWithRetry(() => this.request('POST', path, body));
+  createTask<TData = CreateTaskData>(
+    path: string,
+    body: unknown,
+    headers?: Record<string, string>,
+  ): Promise<Envelope<TData>> {
+    const requestId =
+      headers?.['X-Request-Id'] ??
+      headers?.['x-request-id'] ??
+      `req_${Date.now()}_${randomUUID().replaceAll('-', '').slice(0, 8)}`;
+    const idempotencyKey =
+      headers?.['Idempotency-Key'] ??
+      headers?.['idempotency-key'] ??
+      requestId;
+    const requestHeaders = {
+      'X-Request-Id': requestId,
+      'Idempotency-Key': idempotencyKey,
+      ...headers,
+    };
+    return this.request('POST', path, body, requestHeaders);
   }
 
   /**
@@ -113,11 +139,42 @@ export class LinkmodelClient {
   }
 
   /**
+   * Fetch current API key quota and spend limits.
+   * Safe to retry with backoff because GET is idempotent.
+   */
+  async fetchApiKeyQuota(): Promise<ApiKeyQuotaData> {
+    return this.requestWithRetry(async () => {
+      const url = `${this.baseUrl}/billing/api-key/quota`;
+      let res: Response;
+      let text: string;
+      try {
+        res = await this.fetchImpl(url, {
+          method: 'GET',
+          headers: buildClientHeaders(this.apiKey),
+          signal: AbortSignal.timeout(this.requestTimeoutMs),
+        });
+        text = await res.text();
+      } catch (err) {
+        throw new NetworkError(url, err);
+      }
+      if (!res.ok) {
+        if (res.status === 401) throw new AuthError(`Authentication failed: ${text}`);
+        throw new ApiError(`HTTP ${res.status}: ${text}`, res.status);
+      }
+      try {
+        return JSON.parse(text) as ApiKeyQuotaData;
+      } catch {
+        throw new ApiError(`Invalid quota response (HTTP ${res.status}): ${text}`, res.status);
+      }
+    });
+  }
+
+  /**
    * Retry policy:
    * - Only 5xx and network errors use exponential backoff (500ms -> 1s -> 2s), up to 3 retries.
    * - 4xx and business errors (HTTP 200 with non-zero code) are never retried.
    */
-  private async requestWithRetry<T>(fn: () => Promise<Envelope<T>>): Promise<Envelope<T>> {
+  private async requestWithRetry<T>(fn: () => Promise<T>): Promise<T> {
     let attempt = 0;
     for (;;) {
       try {
@@ -136,6 +193,7 @@ export class LinkmodelClient {
     method: 'GET' | 'POST',
     path: string,
     body?: unknown,
+    headers?: Record<string, string>,
   ): Promise<Envelope<T>> {
     const url = `${this.baseUrl}${path}`;
     let res: Response;
@@ -145,7 +203,7 @@ export class LinkmodelClient {
     try {
       res = await this.fetchImpl(url, {
         method,
-        headers: buildClientHeaders(this.apiKey, body),
+        headers: buildClientHeaders(this.apiKey, body, headers),
         body: body !== undefined ? JSON.stringify(body) : undefined,
         signal: AbortSignal.timeout(this.requestTimeoutMs),
       });
@@ -199,5 +257,5 @@ function businessError<T>(envelope: Envelope<T>): ApiError {
     return new AuthError(`Authentication failed: ${message}`, envelope.requestId);
   }
   // Use status 200 for business errors so they do not trigger transport retry logic.
-  return new ApiError(message, 200, envelope.requestId);
+  return new ApiError(message, 200, envelope.requestId, envelope.code);
 }

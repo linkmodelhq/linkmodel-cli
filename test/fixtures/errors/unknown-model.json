@@ -1,0 +1,5 @@
+{
+  "code": 100300,
+  "msg": "model 'non-existent-model' not found",
+  "request_id": "r-unknown-m"
+}

@@ -6,6 +6,7 @@ import { isTerminalStatus, type CreateTaskData, type TaskStatusData } from '../a
 import { resolveApiKey, resolveDefaultModel, type KeySource } from '../core/config.js';
 import { downloadArtifacts } from '../core/download.js';
 import { createOpener, type OpenFiles } from '../core/open.js';
+import { normalizeError } from '../errors/normalizer.js';
 import {
   poll,
   PollTimeoutError,
@@ -90,12 +91,22 @@ export function reportFailure(
   payload?: Record<string, unknown>,
 ): number {
   reporter.error(message);
-  if (reporter.mode === 'json') reporter.emitJson({ ok: false, error: message, ...payload });
+  if (reporter.mode === 'json') {
+    const problem = payload?.problem ?? normalizeError(new Error(message));
+    reporter.emitJson({ ok: false, error: message, problem, ...payload });
+  }
   return code;
 }
 
 export function exitCodeForError(err: unknown): number {
-  return err instanceof AuthError ? EXIT.AUTH : EXIT.FAILED;
+  if (err instanceof AuthError) return EXIT.AUTH;
+  const status = (err as any)?.status;
+  const code = (err as any)?.code;
+  const msg = (err as Error)?.message ?? '';
+  if (status === 401 || code === 401 || /invalid api key|authentication failed/i.test(msg)) {
+    return EXIT.AUTH;
+  }
+  return EXIT.FAILED;
 }
 
 export function errorMessage(err: unknown): string {
@@ -193,7 +204,8 @@ export async function runGen(
       spec.buildCreateRequest(prompt, genOpts),
     );
   } catch (err) {
-    return reportFailure(reporter, errorMessage(err), exitCodeForError(err));
+    const problem = normalizeError(err, { operation: 'create', model: (genOpts as any)?.model });
+    return reportFailure(reporter, errorMessage(err), exitCodeForError(err), { problem });
   } finally {
     reporter.spinnerStop();
   }

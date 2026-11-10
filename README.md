@@ -348,28 +348,53 @@ lkm image "a red panda" --json
 lkm video status <task_id> --wait --json
 ```
 
-In JSON mode, stdout contains exactly one JSON line. Human-readable logs go to
-stderr. On failure, the JSON line always includes:
+In JSON mode, stdout contains exactly one JSON line. Human-readable progress indicators and
+spinner logs go to stderr. On failure, the JSON line includes the human-readable `error` string
+and a structured **RFC 9457 `ProblemDetails`** object:
 
 ```json
 {
   "ok": false,
-  "error": "human-readable error"
+  "error": "Server returned error code 100300 (server message: resolution must be 768P or 1080P for MiniMax-Hailuo-02)",
+  "problem": {
+    "type": "https://api.linkmodel.ai/errors/validation",
+    "title": "Validation Error",
+    "status": 400,
+    "detail": "Server returned error code 100300 (server message: resolution must be 768P or 1080P for MiniMax-Hailuo-02)",
+    "reason": "INCOMPATIBLE_PARAMS",
+    "retryable": false,
+    "charged": "no",
+    "next_action": "fix_input",
+    "exitCode": 9,
+    "upstream": {
+      "code": 100300,
+      "msg": "resolution must be 768P or 1080P for MiniMax-Hailuo-02",
+      "requestId": "req_1794334356608_7pj0qrz",
+      "status": 200
+    }
+  }
 }
 ```
 
 Local validation failures may also include an `errors` array.
 
-## Exit Codes
+## Error Handling & Exit Code Matrix
 
-| Code | Meaning |
-|---|---|
-| `0` | Success |
-| `1` | Task failed, task cancelled, download failure, or API/network error |
-| `2` | Usage error, invalid parameters, missing API key, or unknown command |
-| `3` | Authentication failed |
-| `4` | Polling timed out; the server task keeps running |
-| `130` | Interrupted with Ctrl-C; the server task keeps running |
+The CLI features a client-side **Anti-Corruption Layer (Error Normalizer)** that translates upstream HTTP wire responses into standardized POSIX and automation-friendly exit codes, adhering to the [LinkModel OpenAPI Specifications](https://docs.linkmodel.ai/openapi/).
+
+| Exit Code | Reason Code | Upstream Wire Pattern | `charged` | `retryable` | Recommended Action | Description |
+| :---: | :--- | :--- | :---: | :---: | :--- | :--- |
+| **`0`** | `SUCCESS` | HTTP 200 `{ code: 0 }` | `yes` | `false` | `none` | Task completed and artifacts downloaded successfully. |
+| **`1`** | `SERVER` / `OUTPUT_EXPIRED` | HTTP 5xx / HTTP 403 on asset URL | `maybe` / `yes` | `false` | `retry` / `regenerate` | Server internal error, cancelled task, or expired storage URL. |
+| **`2`** | `VALIDATION` | CLI flag error / HTTP 200 `{ code: 100300 }` | `no` | `false` | `fix_input` | Missing arguments, invalid flag format, or schema constraint violation. |
+| **`3`** | `AUTH_INVALID` | HTTP 401 / `{ code: 401 }` | `no` | `false` | `reauthenticate` | Invalid, expired, or missing API key. Run `lkm auth login`. |
+| **`4`** | `RATE_LIMITED` / `POLL_TIMEOUT` | HTTP 429 / Polling timeout window reached | `no` / `yes` | `true` | `retry_with_backoff` | Too many requests sent, or task exceeded polling timeout (task continues on server). |
+| **`5`** | `CONTENT_POLICY` | Task `Failed` with moderation keyword | `no` | `false` | `fix_input` | Prompt or output blocked by upstream safety and content policy filter. |
+| **`6`** | `NETWORK` / `CREATE_OUTCOME_UNKNOWN` | `ECONNRESET`, TLS, or timeout during request | `no` / `maybe` | `true` (query) / `false` (create) | `reconcile` | Network fault. Tasks in creation are NOT retried automatically to prevent double-billing. |
+| **`8`** | `UNKNOWN_MODEL` | HTTP 200 `{ code: 100300 }` ("model not found") | `no` | `false` | `fix_input` | Specified model name does not exist upstream. Run `lkm models list`. |
+| **`9`** | `INCOMPATIBLE_PARAMS` | HTTP 200 `{ code: 100300 }` (resolution/aspect mismatch) | `no` | `false` | `fix_input` | Model parameter combinations are incompatible (e.g. 512P on Hailuo-02). |
+| **`37`** | `INSUFFICIENT_BALANCE` | HTTP 200/500 `{ code: 100601 }` ("insufficient balance") | `no` | `false` | `check_quota` | Account balance depleted or daily API key quota ($1.00/day limit) reached. |
+| **`130`** | `ABORTED` | `SIGINT` (Ctrl+C) | `maybe` | `false` | `check_status` | Process interrupted by user. Task continues running upstream; check with `lkm <modality> status <id>`. |
 
 Scripts can retry or resume on `4`, and should treat `3` as an authentication
 problem.

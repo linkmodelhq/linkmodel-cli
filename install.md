@@ -184,9 +184,14 @@ lkm video status <task_id> --wait --no-download
 | `lkm: command not found` | Global npm bin not in PATH | Check `npm prefix -g` and PATH |
 | Engine error during install | Node.js too old | Upgrade to Node.js 20+ |
 | Auth exits with code 3 | Missing or invalid API key | Re-run `lkm auth login --api-key <key>` |
-| Usage exits with code 2 | Missing key or invalid parameters | Read stderr or JSON `error` |
+| Usage exits with code 2 | Missing key or invalid parameters | Read stderr or JSON `error` / `errors` |
 | Doctor exits with code 1 | A required local or auth check failed | Inspect `lkm doctor` output |
 | Polling exits with code 4 | Task is still running | Run `lkm image status <task_id> --wait` or `lkm video status <task_id> --wait` |
+| Moderation exits with code 5 | Content policy violation | Adjust prompt or inputs to comply with safety filters |
+| Network exits with code 6 | Connection dropped or timed out | Check network connectivity; task creation is not auto-retried to avoid double billing |
+| Unknown model exits with code 8 | Model name not recognized | Run `lkm models list` to see available image/video models |
+| Param mismatch exits with code 9 | Incompatible model parameters | Run `lkm models show <model>` to check supported resolutions/durations |
+| Quota exits with code 37 | Balance depleted or daily cap reached | Check balance and daily limit on LinkModel dashboard |
 | URL no longer downloads | Signed artifact URL expired | Re-query status if possible, otherwise regenerate |
 
 ## 6. Safety Rules for Agents

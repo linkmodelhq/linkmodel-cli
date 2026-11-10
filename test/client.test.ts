@@ -57,6 +57,8 @@ test('createTask:POST path, Bearer header, request body, msg envelope', async ()
   assert.equal(headers['User-Agent'], `${PACKAGE_NAME}/${VERSION}`);
   assert.equal(headers['X-LinkModel-Client'], 'cli');
   assert.equal(headers['X-LinkModel-Client-Version'], VERSION);
+  assert.ok(headers['X-Request-Id'], 'X-Request-Id must be set');
+  assert.ok(headers['Idempotency-Key'], 'Idempotency-Key must be set');
   assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
     model: 'gpt-image-2',
     prompt: 'a cat',
@@ -122,7 +124,29 @@ test('4xx responses such as 400 and 429 are never retried', async () => {
   }
 });
 
-test('5xx uses exponential backoff retries(500ms→1s),returns after third attempt succeeds', async () => {
+test('createTask invariant: 5xx errors are NEVER retried to prevent double-billing', async () => {
+  const sleeps: number[] = [];
+  const { client, calls } = makeClient(
+    () => jsonResponse(500, { code: 500, msg: 'server error' }),
+    { sleeps },
+  );
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), ApiError);
+  assert.equal(calls.length, 1, 'createTask must fire at most 1 POST');
+  assert.equal(sleeps.length, 0);
+});
+
+test('createTask invariant: network errors are NEVER retried to prevent double-billing', async () => {
+  const sleeps: number[] = [];
+  const { client, calls } = makeClient(
+    () => { throw new TypeError('fetch failed'); },
+    { sleeps },
+  );
+  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), NetworkError);
+  assert.equal(calls.length, 1, 'createTask must fire at most 1 POST');
+  assert.equal(sleeps.length, 0);
+});
+
+test('queryTask: 5xx uses exponential backoff retries(500ms→1s),returns after third attempt succeeds', async () => {
   const sleeps: number[] = [];
   let n = 0;
   const { client, calls } = makeClient(
@@ -130,23 +154,23 @@ test('5xx uses exponential backoff retries(500ms→1s),returns after third attem
       n++;
       return n < 3
         ? jsonResponse(500, { code: 500, msg: 'server error', request_id: `r-${n}` })
-        : jsonResponse(200, { code: 0, msg: 'ok', data: { task_id: 't-9' } });
+        : jsonResponse(200, { code: 0, msg: 'ok', data: { status: 'Success' } });
     },
     { sleeps },
   );
-  const env = await client.createTask('/images/generations', { model: 'm', prompt: 'p' });
-  assert.equal(env.data.task_id, 't-9');
+  const env = await client.queryTask('/images/generations', 't-9');
+  assert.equal(env.data.status, 'Success');
   assert.equal(calls.length, 3);
   assert.deepEqual(sleeps, [500, 1000]);
 });
 
-test('persistent 5xx failure throws after initial request plus 3 retries', async () => {
+test('queryTask: persistent 5xx failure throws after initial request plus 3 retries', async () => {
   const sleeps: number[] = [];
   const { client, calls } = makeClient(
     () => jsonResponse(502, { code: 502, msg: 'bad gateway', request_id: 'r-502' }),
     { sleeps },
   );
-  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), (err: unknown) => {
+  await assert.rejects(client.queryTask('/images/generations', 't-9'), (err: unknown) => {
     assert.ok(err instanceof ApiError);
     assert.equal((err as ApiError).status, 502);
     return true;
@@ -155,36 +179,50 @@ test('persistent 5xx failure throws after initial request plus 3 retries', async
   assert.deepEqual(sleeps, [500, 1000, 2000]);
 });
 
-test('network errors also use exponential backoff retries', async () => {
+test('queryTask: network errors also use exponential backoff retries', async () => {
   const sleeps: number[] = [];
   let n = 0;
   const { client, calls } = makeClient(
     () => {
       n++;
       if (n < 3) throw new TypeError('fetch failed');
-      return jsonResponse(200, { code: 0, msg: 'ok', data: { task_id: 't-7' } });
+      return jsonResponse(200, { code: 0, msg: 'ok', data: { status: 'Success' } });
     },
     { sleeps },
   );
-  const env = await client.createTask('/images/generations', { model: 'm', prompt: 'p' });
-  assert.equal(env.data.task_id, 't-7');
+  const env = await client.queryTask('/images/generations', 't-7');
+  assert.equal(env.data.status, 'Success');
   assert.equal(calls.length, 3);
   assert.deepEqual(sleeps, [500, 1000]);
 });
 
-test('network errors throw NetworkError after retries are exhausted', async () => {
+test('queryTask: network errors throw NetworkError after retries are exhausted', async () => {
   const { client, calls } = makeClient(() => {
     throw new TypeError('fetch failed');
   });
-  await assert.rejects(client.createTask('/images/generations', { model: 'm', prompt: 'p' }), NetworkError);
+  await assert.rejects(client.queryTask('/images/generations', 't-7'), NetworkError);
   assert.equal(calls.length, 4);
+});
+
+test('fetchApiKeyQuota: calls /billing/api-key/quota with retry on 5xx', async () => {
+  let n = 0;
+  const { client, calls } = makeClient(() => {
+    n++;
+    return n === 1
+      ? jsonResponse(500, { code: 500, msg: 'flaky' })
+      : jsonResponse(200, { daily: { limit: '1.0', remaining: '0.8' } });
+  });
+  const quota = await client.fetchApiKeyQuota();
+  assert.equal(quota.daily?.remaining, '0.8');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].url, 'https://api.test/v1/billing/api-key/quota');
 });
 
 // Real regression case: AbortSignal still applies after response headers arrive. Earlier, res.text() lived outside the try,
 // so a raw TimeoutError during body read was not wrapped as NetworkError and therefore was never retried.
 // It bubbled up as failure even though the server task had succeeded. 97 passing tests did not catch it,
 // because mocks only failed the whole request and never simulated headers returned but body failed.
-test('response headers returned but body read failed -> still wraps as NetworkError and retries', async () => {
+test('response headers returned but body read failed -> still wraps as NetworkError and retries on queryTask', async () => {
   const { client, calls } = makeClient(
     () =>
       new Response(
@@ -197,14 +235,14 @@ test('response headers returned but body read failed -> still wraps as NetworkEr
       ),
   );
   await assert.rejects(
-    client.createTask('/images/generations', { model: 'm', prompt: 'p' }),
+    client.queryTask('/images/generations', 't-1'),
     (err: unknown) => {
       assert.ok(err instanceof NetworkError, `expected NetworkError, got ${(err as Error).name}`);
       assert.match((err as Error).message, /images\/generations/, 'error message should include URL');
       return true;
     },
   );
-  assert.equal(calls.length, 4, 'body read failure should also trigger retries (initial request plus 3 retries)');
+  assert.equal(calls.length, 4, 'body read failure should trigger retries on queryTask (initial request plus 3 retries)');
 });
 
 test('2xx invalid envelope throws instead of silently accepting', async () => {

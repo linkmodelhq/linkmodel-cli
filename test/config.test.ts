@@ -83,7 +83,9 @@ test('maskApiKey:masked key is identifiable but not usable', () => {
 test('writeApiKey writes with mode 0600', () => {
   const home = tmpHome();
   const p = writeApiKey('k1', home);
-  assert.equal(fs.statSync(p).mode & 0o777, 0o600);
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(p).mode & 0o777, 0o600);
+  }
   const parsed = JSON.parse(fs.readFileSync(p, 'utf8'));
   assert.equal(parsed.api_key, 'k1');
 });
@@ -91,10 +93,14 @@ test('writeApiKey writes with mode 0600', () => {
 test('repeated writes restore existing file to 0600 and preserve other fields', () => {
   const home = tmpHome();
   const p = writeApiKey('k1', home);
-  fs.chmodSync(p, 0o644); // Simulate a user loosening permissions.
+  if (process.platform !== 'win32') {
+    fs.chmodSync(p, 0o644); // Simulate a user loosening permissions.
+  }
   fs.writeFileSync(p, JSON.stringify({ api_key: 'k1', other: 'keep' }));
   writeApiKey('k2', home);
-  assert.equal(fs.statSync(p).mode & 0o777, 0o600);
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(p).mode & 0o777, 0o600);
+  }
   const parsed = JSON.parse(fs.readFileSync(p, 'utf8'));
   assert.equal(parsed.api_key, 'k2');
   assert.equal(parsed.other, 'keep');

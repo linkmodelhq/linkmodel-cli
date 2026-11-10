@@ -35,3 +35,25 @@ export interface TaskStatusData {
   msg?: string;
   [key: string]: unknown;
 }
+
+export interface ApiKeyQuotaData {
+  key_id?: string;
+  currency?: string;
+  as_of?: string;
+  daily?: {
+    limit?: string | null;
+    used?: string;
+    remaining?: string | null;
+    usage_ratio?: number | null;
+    status?: string;
+    reset_at?: string;
+  };
+  monthly?: {
+    limit?: string | null;
+    used?: string;
+    remaining?: string | null;
+    usage_ratio?: number | null;
+    status?: string;
+    reset_at?: string;
+  };
+}

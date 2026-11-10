@@ -35,7 +35,9 @@ test('checkForUpdate:writes cache and reuses it within 24 hours', async () => {
   assert.equal(first?.updateAvailable, true);
   assert.equal(first?.latestVersion, '0.1.1');
   assert.equal(calls, 1);
-  assert.equal(fs.statSync(updateCachePath(home)).mode & 0o777, 0o600);
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(updateCachePath(home)).mode & 0o777, 0o600);
+  }
 
   const second = await checkForUpdate({
     packageName: 'linkmodel-cli',

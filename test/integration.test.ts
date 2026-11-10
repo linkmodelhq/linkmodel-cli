@@ -265,9 +265,11 @@ function runCli(
   envOverrides: Record<string, string | undefined> = {},
   cliPath: string = CLI,
 ): Promise<CliResult> {
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-'));
   const env: NodeJS.ProcessEnv = {
     PATH: process.env.PATH,
-    HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-')),
+    HOME: tempHome,
+    USERPROFILE: tempHome,
     LINKMODEL_BASE_URL: `${origin}/v1`,
     LINKMODEL_POLL_SCHEDULE: FAST_SCHEDULE,
     LINKMODEL_API_KEY: 'test-key',
@@ -276,8 +278,11 @@ function runCli(
     if (v === undefined) delete env[k];
     else env[k] = v;
   }
+  if (env.HOME && !envOverrides.USERPROFILE) {
+    env.USERPROFILE = env.HOME;
+  }
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [CLI, ...args], { env });
+    const child = spawn(process.execPath, [cliPath, ...args], { env });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => (stdout += d));
@@ -289,7 +294,11 @@ function runCli(
 
 const tmpDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'lm-out-'));
 
-test('CLI also works when invoked through a symlink, as with npm link or global bin links', async () => {
+test('CLI also works when invoked through a symlink, as with npm link or global bin links', async (t) => {
+  if (process.platform === 'win32') {
+    t.skip('symlink creation requires admin / developer mode on Windows');
+    return;
+  }
   // argv[1] is the symlink path while import.meta.url is the real path; the guard must compare realpaths.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lm-bin-'));
   const link = path.join(dir, 'linkmodel');
@@ -713,11 +722,17 @@ test('gen -s size constraints: invalid values are blocked locally and valid enum
 
 // ---------- SIGINT safety ----------
 
-test('Ctrl-C reports that the server task is still running and exits 130', async () => {
+test('Ctrl-C reports that the server task is still running and exits 130', async (t) => {
+  if (process.platform === 'win32') {
+    t.skip('SIGINT process signal trapping is POSIX specific');
+    return;
+  }
   // Use the real schedule without LINKMODEL_POLL_SCHEDULE: after creation it enters a 10s quiet period, making SIGINT deterministic.
+  const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-'));
   const env: NodeJS.ProcessEnv = {
     PATH: process.env.PATH,
-    HOME: fs.mkdtempSync(path.join(os.tmpdir(), 'lm-home-')),
+    HOME: tempHome,
+    USERPROFILE: tempHome,
     LINKMODEL_BASE_URL: `${origin}/v1`,
     LINKMODEL_API_KEY: 'test-key',
   };
@@ -865,7 +880,9 @@ test('config set/get/path round trip; get masks by default and --reveal/--json f
   assert.equal(set.code, 0, set.stderr);
 
   const configFile = path.join(home, '.linkmodel', 'config.json');
-  assert.equal(fs.statSync(configFile).mode & 0o777, 0o600);
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(configFile).mode & 0o777, 0o600);
+  }
 
   // Masked by default: stdout has identifiable but unusable fragments, full key is absent, and --reveal is suggested.
   const get = await runCli(['config', 'get'], { HOME: home, LINKMODEL_API_KEY: undefined });

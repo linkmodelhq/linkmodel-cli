@@ -4,6 +4,9 @@ test-dist/
 out/
 docs/plans/
 docs/superpowers/
+coverage/
+.scannerwork/
+.sonar.env*
 
 # Exported conversation logs that may contain sensitive information
 *-cli-linkmodel-api-cli.txt

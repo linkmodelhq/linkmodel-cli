@@ -158,7 +158,7 @@ export function isPromptExitError(err: unknown): boolean {
 }
 
 function modelChoices(defaultModel: string, models: string[]) {
-  return models.sort().map((model) => ({
+  return models.sort((a, b) => a.localeCompare(b)).map((model) => ({
     name: model === defaultModel ? `${model} (built-in default)` : model,
     value: model,
   }));
